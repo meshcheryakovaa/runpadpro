@@ -31,6 +31,16 @@ jobs:
         run: ./modern/scripts/build.ps1
       - name: Server integration tests
         run: python modern/tests/server_integration.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Classroom panel browser tests
+        working-directory: modern/tests/browser
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE) { throw 'Browser test dependencies failed.' }
+          npm test
+          if ($LASTEXITCODE) { throw 'Classroom panel browser tests failed.' }
       - name: Ensure Inno Setup
         run: |
           if (!(Test-Path "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe")) {

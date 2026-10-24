@@ -107,14 +107,13 @@ static async Task<int> MainAsync(string[] args)
                     Enrollment = new(server, registration.GetProperty("deviceId").GetString()!, registration.GetProperty("token").GetString()!) };
                 if (rest.Contains("--machine"))
                 {
-                    Directory.CreateDirectory(Paths.SharedData);
                     var acl = new DirectorySecurity(); acl.SetAccessRuleProtection(true, false);
                     foreach (var sid in new[] { WellKnownSidType.LocalSystemSid, WellKnownSidType.BuiltinAdministratorsSid })
                         acl.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(sid, null), FileSystemRights.FullControl,
                             InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
                     acl.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null), FileSystemRights.ReadAndExecute,
                         InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
-                    new DirectoryInfo(Paths.SharedData).SetAccessControl(acl);
+                    SecureDirectory(Paths.SharedData, acl);
                     JsonFile.Write(Path.Combine(Paths.SharedData, "config.json"), enrolled with { ShareScreens = false });
                 }
                 else Settings.Save(enrolled);
@@ -225,6 +224,31 @@ static async Task<int> ScAsync(params string[] arguments)
     foreach (var arg in arguments) start.ArgumentList.Add(arg);
     using var process = Process.Start(start)!; await process.WaitForExitAsync(); return process.ExitCode;
 }
+static void SecureDirectory(string path, DirectorySecurity security)
+{
+    RequireAdmin();
+    var directory = new DirectoryInfo(path);
+    if (directory.Exists)
+    {
+        if ((directory.Attributes & FileAttributes.ReparsePoint) != 0) throw new UnauthorizedAccessException("Linked system data directory is not allowed.");
+        var owner = directory.GetAccessControl(AccessControlSections.Owner).GetOwner(typeof(SecurityIdentifier))?.Value;
+        using var identity = WindowsIdentity.GetCurrent();
+        if (owner != identity.User?.Value && owner != "S-1-5-18" && owner != "S-1-5-32-544")
+            throw new UnauthorizedAccessException("System data directory is owned by another user. Remove it after inspection before installing.");
+        void CheckChildren(DirectoryInfo parent)
+        {
+            foreach (var child in parent.EnumerateFileSystemInfos())
+            {
+                if ((child.Attributes & FileAttributes.ReparsePoint) != 0) throw new UnauthorizedAccessException("Linked system data entry is not allowed.");
+                if (child is DirectoryInfo subdirectory) CheckChildren(subdirectory);
+            }
+        }
+        CheckChildren(directory);
+    }
+    security.SetOwner(new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null));
+    directory.Create(security);
+    directory.SetAccessControl(security);
+}
 static async Task ServiceAsync(string verb)
 {
     RequireAdmin();
@@ -233,12 +257,11 @@ static async Task ServiceAsync(string verb)
     {
         var trustedRoot = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)) + Path.DirectorySeparatorChar;
         if (!Paths.App.StartsWith(trustedRoot, StringComparison.OrdinalIgnoreCase)) throw new UnauthorizedAccessException("Установите клиент в Program Files через Setup. Служба не запускается из папки, доступной для записи пользователю.");
-        Directory.CreateDirectory(Paths.MachineData);
         var acl = new DirectorySecurity(); acl.SetAccessRuleProtection(true, false);
         foreach (var sid in new[] { WellKnownSidType.LocalSystemSid, WellKnownSidType.BuiltinAdministratorsSid })
             acl.AddAccessRule(new FileSystemAccessRule(new SecurityIdentifier(sid, null), FileSystemRights.FullControl,
                 InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
-        new DirectoryInfo(Paths.MachineData).SetAccessControl(acl);
+        SecureDirectory(Paths.MachineData, acl);
         JsonFile.Write(Path.Combine(Paths.MachineData, "config.json"), Settings.Load() with { ShareScreens = false });
         if (await ScAsync("create", "RunpadPro", "binPath=", "\"" + Paths.Component("Service") + "\"", "start=", "auto", "DisplayName=", "Runpad Pro System Service") != 0)
             throw new IOException("Не удалось создать службу. Если она уже установлена: runpad service uninstall");

@@ -14,6 +14,10 @@ function Invoke-Runpad([Parameter(ValueFromRemainingArguments=$true)][string[]]$
 try {
     Invoke-Runpad @('doctor','--offline') | Out-Host
     Invoke-Runpad @('config','set','classroom','CI') | Out-Null
+    $shell = Start-Process "$install/app/shell/Runpad.Shell.exe" -PassThru
+    Start-Sleep -Seconds 3
+    if ($shell.HasExited) { throw 'WPF shell exited during startup.' }
+    Stop-Process -Id $shell.Id -Force
     $agent = Start-Process "$install/app/agent/Runpad.Agent.exe" -PassThru
     $ready = $false
     for ($i=0; $i -lt 40; $i++) {
@@ -56,7 +60,7 @@ try {
     Write-Host 'PASS: packaged CLI, agent, process modules, external module, enable/disable, updater and rollback.'
 } finally {
     if ($agent -and !$agent.HasExited) { & $cli agent stop 2>$null | Out-Null }
-    Get-Process -Name 'Runpad.Agent','Runpad.ModuleHost' -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$install/*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+    Get-Process -Name 'Runpad.Agent','Runpad.ModuleHost','Runpad.Shell' -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$install/*" } | Stop-Process -Force -ErrorAction SilentlyContinue
     Remove-Item Env:RUNPAD_DATA -ErrorAction SilentlyContinue
 }
 $global:LASTEXITCODE = 0

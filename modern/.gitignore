@@ -6,3 +6,4 @@ artifacts/
 *.pfx
 *.pem
 data/
+**/node_modules/
