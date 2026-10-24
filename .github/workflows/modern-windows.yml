@@ -1,0 +1,83 @@
+name: Modern Windows build
+on:
+  push:
+    branches: [master, 'modern/**']
+    tags: ['v*']
+    paths: ['modern/**', '.github/workflows/modern-windows.yml']
+  pull_request:
+    paths: ['modern/**', '.github/workflows/modern-windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: modern-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build and test
+        run: ./modern/scripts/build.ps1
+      - name: Server integration tests
+        run: python modern/tests/server_integration.py
+      - name: Ensure Inno Setup
+        run: |
+          if (!(Test-Path "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe")) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE) { throw 'Inno Setup installation failed.' }
+          }
+      - name: Package client, server and modules
+        run: ./modern/scripts/package.ps1 -Version 0.1.0
+      - name: Windows package integration tests
+        run: ./modern/tests/windows-smoke.ps1
+      - name: Keep packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: RunpadPro-Windows-x64
+          path: |
+            modern/artifacts/*.zip
+            modern/artifacts/*.exe
+            modern/artifacts/*.sha256
+          retention-days: 14
+      - name: Keep test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RunpadPro-test-results
+          path: modern/tests/Runpad.Tests/TestResults/**
+  release:
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/modern/windows-modular')
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: RunpadPro-Windows-x64
+          path: packages
+      - name: Publish packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          COMMIT: ${{ github.sha }}
+          REF: ${{ github.ref }}
+          TAG: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          if [[ "$REF" == refs/tags/v* ]]; then
+            gh release create "$TAG" packages/* --target "$COMMIT" --title "Runpad Pro $TAG" --generate-notes
+          else
+            gh release create "v0.1.0-preview.$RUN_NUMBER" packages/* --target "$COMMIT" --prerelease --title "Runpad Pro 0.1.0 Preview $RUN_NUMBER" --notes "Windows 10/11 x64 preview. Includes Client Setup, portable client, standalone server and module packages. See modern/README.md for setup and known limitations."
+          fi

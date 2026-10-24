@@ -1,0 +1,1 @@
+{"id":"yandex-disk","name":"Мониторинг в Яндекс Диске","version":"0.1.0","apiVersion":1,"kind":"dotnet","entry":"Runpad.Modules.YandexDisk.dll","permissions":["network.yandex-disk","telemetry.read"],"autostart":true,"host":"user","dependencies":["monitoring"]}

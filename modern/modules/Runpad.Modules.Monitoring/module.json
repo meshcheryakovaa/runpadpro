@@ -1,0 +1,1 @@
+{"id":"monitoring","name":"Мониторинг компьютера и батареи","version":"0.1.0","apiVersion":1,"kind":"dotnet","entry":"Runpad.Modules.Monitoring.dll","permissions":["system.read","battery.read"],"autostart":true,"host":"user"}

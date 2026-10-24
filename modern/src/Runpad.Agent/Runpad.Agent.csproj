@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0-windows</TargetFramework><OutputType>WinExe</OutputType><UseWindowsForms>true</UseWindowsForms></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Runpad.Core/Runpad.Core.csproj" /></ItemGroup>
+</Project>
