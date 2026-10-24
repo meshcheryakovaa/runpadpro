@@ -55,7 +55,8 @@ try {
     Invoke-Runpad @('doctor','--offline') | Out-Host
     Write-Host 'PASS: packaged CLI, agent, process modules, external module, enable/disable, updater and rollback.'
 } finally {
-    & $cli agent stop 2>$null | Out-Null
+    if ($agent -and !$agent.HasExited) { & $cli agent stop 2>$null | Out-Null }
     Get-Process -Name 'Runpad.Agent','Runpad.ModuleHost' -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$install/*" } | Stop-Process -Force -ErrorAction SilentlyContinue
     Remove-Item Env:RUNPAD_DATA -ErrorAction SilentlyContinue
 }
+$global:LASTEXITCODE = 0

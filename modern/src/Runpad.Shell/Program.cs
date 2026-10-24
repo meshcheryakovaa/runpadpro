@@ -168,6 +168,7 @@ internal sealed class ShellWindow : Window
                     else if (id == "yandex-disk") summary += data.GetProperty("configured").GetBoolean() ? "  ·  Диск подключён" : "  ·  Подключите OAuth-токен через CLI";
                     else if (id == "wallpaper") summary += "  ·  HTML-фон рабочего пространства";
                     else if (data.TryGetProperty("message", out var message)) summary += "  ·  " + message.GetString();
+                    if (data.TryGetProperty("error", out var dataError) && dataError.ValueKind == JsonValueKind.String) summary += "\n" + dataError.GetString();
                 }
                 if (item.TryGetProperty("error", out var moduleError) && moduleError.ValueKind == JsonValueKind.String) summary += "\n" + moduleError.GetString();
                 card.Children.Add(new TextBlock { Text = summary, TextWrapping = TextWrapping.Wrap, Foreground = Brushes.LightSteelBlue, Margin = new Thickness(0, 8, 0, 6) });

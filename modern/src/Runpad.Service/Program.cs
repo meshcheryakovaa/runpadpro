@@ -64,7 +64,7 @@ sealed class SystemWorker : BackgroundService
         var security = new PipeSecurity();
         security.SetAccessRuleProtection(true, false);
         security.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null), PipeAccessRights.FullControl, AccessControlType.Allow));
-        security.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null), PipeAccessRights.ReadWrite, AccessControlType.Allow));
+        security.AddAccessRule(new PipeAccessRule(new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null), PipeAccessRights.ReadWrite | PipeAccessRights.Synchronize, AccessControlType.Allow));
         return NamedPipeServerStreamAcl.Create(Paths.ServicePipe, PipeDirection.InOut, 4, PipeTransmissionMode.Byte,
             PipeOptions.Asynchronous, 4096, 4096, security);
     }

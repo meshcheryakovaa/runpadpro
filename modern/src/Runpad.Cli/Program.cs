@@ -7,6 +7,7 @@ using System.Text.Json;
 using Runpad.Contracts;
 using Runpad.Core;
 
+Console.OutputEncoding = new System.Text.UTF8Encoding(false);
 try { return await MainAsync(args); }
 catch (Exception e) { Console.Error.WriteLine("Ошибка: " + e.Message); return 1; }
 

@@ -34,8 +34,8 @@ Name: "{commondesktop}\Runpad Pro"; Filename: "{sys}\wscript.exe"; Parameters: "
 [Registry]
 Root: HKLM; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "RunpadProAgent"; ValueData: """{app}\app\agent\Runpad.Agent.exe"""; Tasks: autorun; Flags: uninsdeletevalue
 [UninstallRun]
-Filename: "{sys}\sc.exe"; Parameters: "stop RunpadPro"; Flags: runhidden waituntilterminated
-Filename: "{sys}\sc.exe"; Parameters: "delete RunpadPro"; Flags: runhidden waituntilterminated
+Filename: "{sys}\sc.exe"; Parameters: "stop RunpadPro"; Flags: runhidden waituntilterminated; RunOnceId: "StopRunpadService"
+Filename: "{sys}\sc.exe"; Parameters: "delete RunpadPro"; Flags: runhidden waituntilterminated; RunOnceId: "DeleteRunpadService"
 [Code]
 function InitializeSetup(): Boolean;
 begin

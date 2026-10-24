@@ -6,7 +6,7 @@ $stage = Join-Path $output 'client'
 if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item "$stage/app" -ItemType Directory -Force | Out-Null
 function Publish([string]$project, [string]$destination, [bool]$selfContained = $true) {
-    dotnet publish $project -c Release -r win-x64 --self-contained $selfContained.ToString().ToLowerInvariant() -p:Version=$Version -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -o $destination
+    dotnet publish $project -c Release -r win-x64 --self-contained $selfContained.ToString().ToLowerInvariant() --disable-build-servers -m:1 -p:Version=$Version -p:PublishTrimmed=false -p:DebugType=None -p:DebugSymbols=false -o $destination
     if ($LASTEXITCODE) { throw "Publish failed: $project" }
 }
 Push-Location $root
