@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup><ProjectReference Include="../Runpad.Core/Runpad.Core.csproj" /></ItemGroup>
+  <ItemGroup><Content Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+</Project>

@@ -1,0 +1,16 @@
+<Solution>
+  <Project Path="examples/hello/HelloModule.csproj" />
+  <Project Path="modules/Runpad.Modules.Monitoring/Runpad.Modules.Monitoring.csproj" />
+  <Project Path="modules/Runpad.Modules.Wallpaper/Runpad.Modules.Wallpaper.csproj" />
+  <Project Path="modules/Runpad.Modules.YandexDisk/Runpad.Modules.YandexDisk.csproj" />
+  <Project Path="src/Runpad.Agent/Runpad.Agent.csproj" />
+  <Project Path="src/Runpad.Cli/Runpad.Cli.csproj" />
+  <Project Path="src/Runpad.Contracts/Runpad.Contracts.csproj" />
+  <Project Path="src/Runpad.Core/Runpad.Core.csproj" />
+  <Project Path="src/Runpad.ModuleHost/Runpad.ModuleHost.csproj" />
+  <Project Path="src/Runpad.Server/Runpad.Server.csproj" />
+  <Project Path="src/Runpad.Service/Runpad.Service.csproj" />
+  <Project Path="src/Runpad.Shell/Runpad.Shell.csproj" />
+  <Project Path="src/Runpad.Updater/Runpad.Updater.csproj" />
+  <Project Path="tests/Runpad.Tests/Runpad.Tests.csproj" />
+</Solution>

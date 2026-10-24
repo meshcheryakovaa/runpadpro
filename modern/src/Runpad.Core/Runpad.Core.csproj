@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup><ProjectReference Include="../Runpad.Contracts/Runpad.Contracts.csproj" /></ItemGroup>
+</Project>

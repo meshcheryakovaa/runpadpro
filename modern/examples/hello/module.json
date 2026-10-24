@@ -1,0 +1,1 @@
+{"id":"hello","name":"Пример собственного модуля","version":"1.0.0","apiVersion":1,"kind":"dotnet","entry":"HelloModule.dll","permissions":[],"autostart":true,"host":"user"}
