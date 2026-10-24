@@ -49,6 +49,7 @@ public sealed record ClientSettings
     public bool ShareScreens { get; init; }
     public Enrollment? Enrollment { get; init; }
     public string[] DisabledModules { get; init; } = [];
+    public string[] EnabledModules { get; init; } = [];
     public string? WallpaperFile { get; init; }
     public LauncherApp[] Applications { get; init; } =
     [

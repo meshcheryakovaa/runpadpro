@@ -50,7 +50,7 @@ public sealed partial class ModuleCatalog
                 {
                     if ((File.GetAttributes(dir) & FileAttributes.ReparsePoint) != 0) throw new InvalidDataException("Linked module folder.");
                     var m = Validate(JsonFile.Read(Path.Combine(dir, "module.json"), new ModuleManifest()), dir);
-                    var enabled = m.Autostart && !settings.DisabledModules.Contains(m.Id);
+                    var enabled = (m.Autostart || settings.EnabledModules.Contains(m.Id)) && !settings.DisabledModules.Contains(m.Id);
                     found[m.Id] = new(m, dir, enabled, enabled ? "ready" : "disabled", null);
                 }
                 catch (Exception e)

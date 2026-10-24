@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Markup;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Wpf;
+using Microsoft.Web.WebView2.Core;
 using Runpad.Contracts;
 using Runpad.Core;
 
@@ -176,7 +177,11 @@ internal sealed class ShellWindow : Window
                 card.Children.Add(Button(enabled ? "Отключить" : "Включить", async (_, _) =>
                 {
                     var settings = Settings.Load();
-                    Settings.Save(settings with { DisabledModules = enabled ? settings.DisabledModules.Append(id).Distinct().ToArray() : settings.DisabledModules.Where(x => x != id).ToArray() });
+                    Settings.Save(settings with
+                    {
+                        DisabledModules = enabled ? settings.DisabledModules.Append(id).Distinct().ToArray() : settings.DisabledModules.Where(x => x != id).ToArray(),
+                        EnabledModules = enabled ? settings.EnabledModules.Where(x => x != id).ToArray() : settings.EnabledModules.Append(id).Distinct().ToArray()
+                    });
                     await Ipc.CallAsync(Paths.PipeName, "refresh"); await RefreshAsync();
                 }));
                 modules.Children.Add(card);
@@ -197,7 +202,8 @@ internal sealed class ShellWindow : Window
         if (path is null || !File.Exists(path)) { wallpaper.Visibility = Visibility.Collapsed; return; }
         try
         {
-            await wallpaper.EnsureCoreWebView2Async();
+            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(Paths.Data, "webview2"));
+            await wallpaper.EnsureCoreWebView2Async(environment);
             wallpaper.CoreWebView2.Settings.AreHostObjectsAllowed = false;
             wallpaper.CoreWebView2.Settings.IsWebMessageEnabled = false;
             wallpaper.CoreWebView2.Settings.AreDevToolsEnabled = false;

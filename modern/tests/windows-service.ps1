@@ -2,9 +2,11 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
 $installer = Get-ChildItem "$root/artifacts/RunpadPro-Setup-*-win-x64.exe" | Select-Object -First 1
 $destination = Join-Path $env:ProgramFiles 'RunpadPro-CI'
-$process = Start-Process $installer.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$destination",'/TASKS=') -PassThru -Wait
+$installLog = Join-Path $env:TEMP 'runpad-installer-ci.log'
+$process = Start-Process $installer.FullName -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=`"$destination`"",'/TASKS=',"/LOG=`"$installLog`"") -PassThru -Wait
 if ($process.ExitCode -ne 0) { throw 'Installer failed.' }
 $cli = "$destination/app/cli/Runpad.Cli.exe"
+if (!(Test-Path $cli)) { Get-Content $installLog -Tail 60 | Out-Host; throw 'Installed CLI missing.' }
 $env:RUNPAD_DATA = Join-Path $env:TEMP ('runpad-service-test-' + [Guid]::NewGuid().ToString('N'))
 try {
     & $cli service install

@@ -151,7 +151,11 @@ static async Task NotifyAgentAsync()
 static void SetModuleEnabled(string id, bool enabled)
 {
     var settings = Settings.Load();
-    Settings.Save(settings with { DisabledModules = enabled ? settings.DisabledModules.Where(x => x != id).ToArray() : settings.DisabledModules.Append(id).Distinct().ToArray() });
+    Settings.Save(settings with
+    {
+        DisabledModules = enabled ? settings.DisabledModules.Where(x => x != id).ToArray() : settings.DisabledModules.Append(id).Distinct().ToArray(),
+        EnabledModules = enabled ? settings.EnabledModules.Append(id).Distinct().ToArray() : settings.EnabledModules.Where(x => x != id).ToArray()
+    });
 }
 static async Task ModuleAsync(string[] args)
 {
